@@ -1,13 +1,15 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
-import { ArchiveX, File, Inbox, Send, Trash2 } from 'lucide-react'
+import { samplePlugins } from '../../plugin-system/plugins/sample-plugins'
 
 // 导航项类型定义
 export interface NavItem {
+  id: string
   title: string
-  url: string
+  description?: string
   icon: any
   isActive: boolean
+  url?: string
 }
 
 // 导航状态类型
@@ -18,44 +20,24 @@ interface NavState {
   // Actions
   setActiveItem: (item: NavItem) => void
   setActiveItemByTitle: (title: string) => void
+  setActiveItemById: (id: string) => void
 }
 
 export const useNavStore = create<NavState>()(
   devtools(
-    (set, get) => ({
-      // 初始导航数据
-      navMain: [
-        {
-          title: "Inbox",
-          url: "#",
-          icon: Inbox,
-          isActive: true,
-        },
-        {
-          title: "Drafts",
-          url: "#",
-          icon: File,
-          isActive: false,
-        },
-        {
-          title: "Sent",
-          url: "#",
-          icon: Send,
-          isActive: false,
-        },
-        {
-          title: "Junk",
-          url: "#",
-          icon: ArchiveX,
-          isActive: false,
-        },
-        {
-          title: "Trash",
-          url: "#",
-          icon: Trash2,
-          isActive: false,
-        },
-      ],
+    (set) => ({
+      // 初始导航数据 - 使用插件数据
+      navMain: samplePlugins
+        .filter(plugin => plugin.config?.showInNav !== false)
+        .sort((a, b) => (a.config?.position || 0) - (b.config?.position || 0))
+        .map((plugin, index) => ({
+          id: plugin.id,
+          title: plugin.name,
+          description: plugin.description,
+          icon: plugin.icon,
+          isActive: index === 0, // 第一个插件默认激活
+          url: "#"
+        })),
       activeItem: null,
 
       // Actions
@@ -63,7 +45,7 @@ export const useNavStore = create<NavState>()(
         set((state) => ({
           navMain: state.navMain.map(navItem => ({
             ...navItem,
-            isActive: navItem.title === item.title
+            isActive: navItem.id === item.id
           })),
           activeItem: item
         }), false, 'setActiveItem'),
@@ -81,7 +63,22 @@ export const useNavStore = create<NavState>()(
             }
           }
           return state
-        }, false, 'setActiveItemByTitle')
+        }, false, 'setActiveItemByTitle'),
+      
+      setActiveItemById: (id: string) => 
+        set((state) => {
+          const item = state.navMain.find(navItem => navItem.id === id)
+          if (item) {
+            return {
+              navMain: state.navMain.map(navItem => ({
+                ...navItem,
+                isActive: navItem.id === id
+              })),
+              activeItem: item
+            }
+          }
+          return state
+        }, false, 'setActiveItemById')
     }),
     {
       name: 'nav-store', // 用于 Redux DevTools
