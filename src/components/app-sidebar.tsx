@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ArchiveX, Command, File, Inbox, Send, Trash2 } from "lucide-react"
+import { Command } from "lucide-react"
 
 import { NavUser } from "@/components/nav-user"
 import { Label } from "@/components/ui/label"
@@ -10,6 +10,7 @@ import {
     useLeftSidebar,
 } from "@/components/ui/multi-sidebar"
 import { Switch } from "@/components/ui/switch"
+import { useNavMain, useActiveNavItem, useNavStore } from "@/stores/nav-store"
 
 // This is sample data
 const data = {
@@ -18,38 +19,6 @@ const data = {
         email: "m@example.com",
         avatar: "/avatars/shadcn.jpg",
     },
-    navMain: [
-        {
-            title: "Inbox",
-            url: "#",
-            icon: Inbox,
-            isActive: true,
-        },
-        {
-            title: "Drafts",
-            url: "#",
-            icon: File,
-            isActive: false,
-        },
-        {
-            title: "Sent",
-            url: "#",
-            icon: Send,
-            isActive: false,
-        },
-        {
-            title: "Junk",
-            url: "#",
-            icon: ArchiveX,
-            isActive: false,
-        },
-        {
-            title: "Trash",
-            url: "#",
-            icon: Trash2,
-            isActive: false,
-        },
-    ],
     mails: [
         {
             name: "William Smith",
@@ -135,9 +104,9 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof MultiSidebar>) {
-    // Note: I'm using state to show active item.
-    // IRL you should use the url/router.
-    const [activeItem, setActiveItem] = React.useState(data.navMain[0])
+    const navMain = useNavMain()
+    const activeItem = useActiveNavItem()
+    const { setActiveItem } = useNavStore()
     const [mails, setMails] = React.useState(data.mails)
     const { setOpen } = useLeftSidebar()
 
@@ -167,7 +136,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof MultiSideba
                         <div className="relative flex w-full min-w-0 flex-col p-2">
                             <div className="w-full text-sm">
                                 <ul className="flex w-full min-w-0 flex-col gap-1">
-                                    {data.navMain.map((item) => (
+                                    {navMain.map((item) => (
                                         <li key={item.title} className="group/menu-item relative">
                                             <button
                                                 onClick={() => {
