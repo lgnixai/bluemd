@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { usePluginManager, usePlugins } from '../contexts/plugin-context';
 import { Plugin } from '../types/plugin';
+import { useNavStore } from '../../../src/stores/nav-store';
 
 interface PluginManagerModalProps {
   open: boolean;
@@ -20,6 +21,7 @@ export const PluginManagerModal: React.FC<PluginManagerModalProps> = ({
 }) => {
   const pluginManager = usePluginManager();
   const plugins = usePlugins();
+  const { updateNavMain } = useNavStore();
   const [installing, setInstalling] = useState<string | null>(null);
 
   /**
@@ -30,6 +32,8 @@ export const PluginManagerModal: React.FC<PluginManagerModalProps> = ({
     try {
       pluginManager.installPlugin(plugin.id);
       pluginManager.enablePlugin(plugin.id);
+      // 更新导航数据
+      updateNavMain(plugins);
     } catch (error) {
       console.error('Failed to install plugin:', error);
     } finally {
@@ -42,6 +46,8 @@ export const PluginManagerModal: React.FC<PluginManagerModalProps> = ({
    */
   const handleUninstall = (plugin: Plugin) => {
     pluginManager.uninstallPlugin(plugin.id);
+    // 更新导航数据
+    updateNavMain(plugins);
   };
 
   /**

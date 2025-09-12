@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Command } from "lucide-react"
+import { Command, Settings } from "lucide-react"
 
 import { NavUser } from "@/components/nav-user"
 import {
@@ -9,6 +9,7 @@ import {
     useLeftSidebar,
 } from "@/components/ui/multi-sidebar"
 import { useNavMain, useNavStore } from "@/stores/nav-store"
+import { PluginManagerModal } from "../../plugin-system/components/plugin-manager-modal"
 
 // This is sample data
 const data = {
@@ -105,6 +106,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof MultiSideba
     const navMain = useNavMain()
     const { setActiveItem } = useNavStore()
     const [activePlugin, setActivePlugin] = React.useState<any>(null)
+    const [isSettingsModalOpen, setIsSettingsModalOpen] = React.useState(false)
     const { toggleSidebar } = useLeftSidebar()
 
     // 处理插件点击
@@ -164,6 +166,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof MultiSideba
                     </div>
                     <div className="flex flex-col gap-2 p-2">
                         <NavUser user={data.user} />
+                        {/* 设置按钮 */}
+                        <button
+                            onClick={() => setIsSettingsModalOpen(true)}
+                            className="flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-hidden transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 px-2.5 md:px-2"
+                            title="插件设置"
+                        >
+                            <Settings className="size-4 shrink-0" />
+                            <span className="truncate">插件设置</span>
+                        </button>
                     </div>
                 </div>
 
@@ -249,6 +260,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof MultiSideba
                     )}
                 </div>
             </div>
+            
+            {/* 插件管理模态框 */}
+            <PluginManagerModal 
+                open={isSettingsModalOpen}
+                onOpenChange={setIsSettingsModalOpen}
+            />
         </MultiSidebar>
     )
 }

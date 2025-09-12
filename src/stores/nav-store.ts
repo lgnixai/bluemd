@@ -21,6 +21,7 @@ interface NavState {
   setActiveItem: (item: NavItem) => void
   setActiveItemByTitle: (title: string) => void
   setActiveItemById: (id: string) => void
+  updateNavMain: (plugins: any[]) => void
 }
 
 export const useNavStore = create<NavState>()(
@@ -78,7 +79,22 @@ export const useNavStore = create<NavState>()(
             }
           }
           return state
-        }, false, 'setActiveItemById')
+        }, false, 'setActiveItemById'),
+      
+      updateNavMain: (plugins: any[]) => 
+        set(() => ({
+          navMain: plugins
+            .filter(plugin => plugin.config?.showInNav !== false && plugin.installed)
+            .sort((a, b) => (a.config?.position || 0) - (b.config?.position || 0))
+            .map((plugin) => ({
+              id: plugin.id,
+              title: plugin.name,
+              description: plugin.description,
+              icon: plugin.icon,
+              isActive: false,
+              url: "#"
+            }))
+        }), false, 'updateNavMain')
     }),
     {
       name: 'nav-store', // 用于 Redux DevTools
