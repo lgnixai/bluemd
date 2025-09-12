@@ -114,6 +114,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof MultiSideba
             setActivePlugin(null)
             toggleSidebar() // 切换显示/隐藏
         } else {
+            toggleSidebar() // 切换显示/隐藏
             // 如果点击的是其他插件，激活该插件
             setActivePlugin(item)
             setActiveItem(item)
