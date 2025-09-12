@@ -6,6 +6,7 @@ import { Command } from "lucide-react"
 import { NavUser } from "@/components/nav-user"
 import {
     MultiSidebar,
+    useLeftSidebar,
 } from "@/components/ui/multi-sidebar"
 import { useNavMain, useNavStore } from "@/stores/nav-store"
 
@@ -104,12 +105,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof MultiSideba
     const navMain = useNavMain()
     const { setActiveItem } = useNavStore()
     const [activePlugin, setActivePlugin] = React.useState<any>(null)
+    const { toggleSidebar } = useLeftSidebar()
 
     // 处理插件点击
     const handlePluginClick = (item: any) => {
         if (activePlugin?.id === item.id) {
-            // 如果点击的是当前激活的插件，关闭插件内容
+            // 如果点击的是当前激活的插件，关闭插件内容并切换侧边栏
             setActivePlugin(null)
+            toggleSidebar() // 切换显示/隐藏
         } else {
             // 如果点击的是其他插件，激活该插件
             setActivePlugin(item)
