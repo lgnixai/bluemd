@@ -15,7 +15,7 @@ export interface Plugin {
   /** 插件作者 */
   author?: string;
   /** 插件图标组件 */
-  icon: ReactNode;
+  icon: React.ComponentType;
   /** 插件是否已安装 */
   installed: boolean;
   /** 插件是否启用 */

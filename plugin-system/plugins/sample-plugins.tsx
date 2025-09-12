@@ -159,7 +159,7 @@ export const samplePlugins: Plugin[] = [
     description: '应用设置和配置',
     version: '1.0.0',
     author: 'System',
-    icon: <SettingsIcon />,
+    icon: SettingsIcon,
     installed: false,
     enabled: false,
     config: {
@@ -174,7 +174,7 @@ export const samplePlugins: Plugin[] = [
     description: '文件上传和管理',
     version: '1.0.0',
     author: 'System',
-    icon: <FileIcon />,
+    icon: FileIcon,
     installed: false,
     enabled: false,
     config: {
@@ -189,7 +189,7 @@ export const samplePlugins: Plugin[] = [
     description: '全局搜索功能',
     version: '1.0.0',
     author: 'System',
-    icon: <SearchIcon />,
+    icon: SearchIcon,
     installed: false,
     enabled: false,
     config: {
@@ -204,7 +204,7 @@ export const samplePlugins: Plugin[] = [
     description: '日历和事件管理',
     version: '1.0.0',
     author: 'System',
-    icon: <CalendarIcon />,
+    icon: CalendarIcon,
     installed: false,
     enabled: false,
     config: {
