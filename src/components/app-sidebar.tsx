@@ -114,6 +114,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof MultiSideba
         if (activePlugin?.id === item.id) {
             // 如果点击的是当前激活的插件，关闭插件内容
             setActivePlugin(null)
+            setActiveItem(null)
         } else {
             // 如果点击的是其他插件，激活该插件
             setActivePlugin(item)
