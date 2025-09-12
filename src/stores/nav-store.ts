@@ -18,7 +18,7 @@ interface NavState {
   activeItem: NavItem | null
   
   // Actions
-  setActiveItem: (item: NavItem) => void
+  setActiveItem: (item: NavItem | null) => void
   setActiveItemByTitle: (title: string) => void
   setActiveItemById: (id: string) => void
   updateNavMain: (plugins: any[]) => void
@@ -42,11 +42,11 @@ export const useNavStore = create<NavState>()(
       activeItem: null,
 
       // Actions
-      setActiveItem: (item: NavItem) => 
+      setActiveItem: (item: NavItem | null) => 
         set((state) => ({
           navMain: state.navMain.map(navItem => ({
             ...navItem,
-            isActive: navItem.id === item.id
+            isActive: item ? navItem.id === item.id : false
           })),
           activeItem: item
         }), false, 'setActiveItem'),
