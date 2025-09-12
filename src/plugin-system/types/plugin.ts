@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import React from 'react';
 
 /**
  * 插件接口定义

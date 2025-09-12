@@ -1,6 +1,6 @@
 import React from 'react';
-import { useEnabledPlugins, useActivePlugin } from '@/contexts/plugin-context';
-import { Plugin } from '@/types/plugin';
+import { useEnabledPlugins, useActivePlugin } from '../contexts/plugin-context';
+import { Plugin } from '../types/plugin';
 
 interface PluginNavProps {
   className?: string;
@@ -44,17 +44,17 @@ export const PluginNav: React.FC<PluginNavProps> = ({ className = '' }) => {
             key={plugin.id}
             onClick={() => handlePluginClick(plugin)}
             className={`
-              plugin-nav-item
-              ${isPluginActive(plugin) ? 'active' : ''}
+              peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-hidden transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 px-2.5 md:px-2
+              ${isPluginActive(plugin) ? 'bg-sidebar-accent text-sidebar-accent-foreground' : ''}
               ${plugin.config?.styles?.className || ''}
             `}
             title={plugin.description || plugin.name}
             aria-label={plugin.name}
           >
-            <div className="plugin-nav-icon">
-              {plugin.icon}
+            <div className="size-4 shrink-0">
+              {React.createElement(plugin.icon, { className: "size-4" })}
             </div>
-            <span className="plugin-nav-name">
+            <span className="truncate">
               {plugin.name}
             </span>
           </button>
@@ -81,17 +81,17 @@ export const PluginNavItem: React.FC<PluginNavItemProps> = ({
     <button
       onClick={() => onClick(plugin)}
       className={`
-        plugin-nav-item
-        ${active ? 'active' : ''}
+        peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-hidden transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 px-2.5 md:px-2
+        ${active ? 'bg-sidebar-accent text-sidebar-accent-foreground' : ''}
         ${plugin.config?.styles?.className || ''}
       `}
       title={plugin.description || plugin.name}
       aria-label={plugin.name}
     >
-      <div className="plugin-nav-icon">
+      <div className="size-4 shrink-0">
         {plugin.icon}
       </div>
-      <span className="plugin-nav-name">
+      <span className="truncate">
         {plugin.name}
       </span>
     </button>

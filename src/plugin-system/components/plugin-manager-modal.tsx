@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { usePluginManager, usePlugins } from '../contexts/plugin-context';
 import { Plugin } from '../types/plugin';
-import { useNavStore } from '@/stores/nav-store';
+import { useNavStore } from '../../stores/nav-store';
 
 interface PluginManagerModalProps {
   open: boolean;
@@ -120,7 +120,7 @@ export const PluginManagerModal: React.FC<PluginManagerModalProps> = ({
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 flex items-center justify-center">
-                            {plugin.icon}
+                            {React.createElement(plugin.icon, { className: "size-4" })}
                           </div>
                           <div>
                             <h4 className="font-medium">{plugin.name}</h4>

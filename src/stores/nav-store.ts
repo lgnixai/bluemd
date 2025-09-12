@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
-import { samplePlugins } from '../../plugin-system/plugins/sample-plugins'
+import { samplePlugins } from '../plugin-system/plugins/sample-plugins'
 
 // 导航项类型定义
 export interface NavItem {

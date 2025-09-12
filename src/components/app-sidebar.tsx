@@ -9,7 +9,7 @@ import {
     useLeftSidebar,
 } from "@/components/ui/multi-sidebar"
 import { useNavMain, useNavStore } from "@/stores/nav-store"
-import { PluginManagerModal } from "../../plugin-system/components/plugin-manager-modal"
+import { PluginManagerModal } from "../plugin-system"
 
 // This is sample data
 const data = {
