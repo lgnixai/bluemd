@@ -5,16 +5,15 @@ import { Calendars } from '@/components/calendars'
 import { DatePicker } from '@/components/date-picker'
 import { NavUser } from '@/components/nav-user'
 import {
-  Sidebar,
+  MultiSidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
-  SidebarRail,
   SidebarSeparator,
-} from '@/components/ui/sidebar'
+  MultiSidebarTrigger,
+} from '@/components/ui/multi-sidebar'
 
 // This is sample data.
 const data = {
@@ -41,15 +40,19 @@ const data = {
 
 export function SidebarRight({
   ...props
-}: React.ComponentProps<typeof Sidebar>) {
+}: React.ComponentProps<typeof MultiSidebar>) {
   return (
-    <Sidebar
-      collapsible="none"
-      className="sticky top-0 hidden h-svh border-l lg:flex"
+    <MultiSidebar
+      side="right"
+      collapsible="offcanvas"
+      className="sticky top-0 h-svh border-l"
       {...props}
     >
       <SidebarHeader className="border-sidebar-border h-16 border-b">
-        <NavUser user={data.user} />
+        <div className="flex items-center justify-between px-2">
+          <NavUser user={data.user} />
+          <MultiSidebarTrigger side="right" />
+        </div>
       </SidebarHeader>
       <SidebarContent>
         <DatePicker />
@@ -59,13 +62,13 @@ export function SidebarRight({
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton>
+            <button className="peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-hidden transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 h-8 text-sm">
               <Plus />
               <span>New Calendar</span>
-            </SidebarMenuButton>
+            </button>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
-    </Sidebar>
+    </MultiSidebar>
   )
 }

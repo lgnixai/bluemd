@@ -11,7 +11,6 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
   SidebarSeparator,
 } from '@/components/ui/sidebar'
@@ -47,7 +46,7 @@ export function Calendars({
                   <SidebarMenu>
                     {calendar.items.map((item, index) => (
                       <SidebarMenuItem key={item}>
-                        <SidebarMenuButton>
+                        <button className="peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-hidden transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 h-8 text-sm">
                           <div
                             data-active={index < 2}
                             className="group/calendar-item border-sidebar-border text-sidebar-primary-foreground data-[active=true]:border-sidebar-primary data-[active=true]:bg-sidebar-primary flex aspect-square size-4 shrink-0 items-center justify-center rounded-xs border"
@@ -55,7 +54,7 @@ export function Calendars({
                             <Check className="hidden size-3 group-data-[active=true]/calendar-item:block" />
                           </div>
                           {item}
-                        </SidebarMenuButton>
+                        </button>
                       </SidebarMenuItem>
                     ))}
                   </SidebarMenu>

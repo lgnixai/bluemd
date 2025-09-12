@@ -19,10 +19,9 @@ import {
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuAction,
-  SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from '@/components/ui/sidebar'
+import { useLeftSidebar } from '@/components/ui/multi-sidebar'
 
 export function NavFavorites({
   favorites,
@@ -33,7 +32,7 @@ export function NavFavorites({
     emoji: string
   }[]
 }) {
-  const { isMobile } = useSidebar()
+  const { isMobile } = useLeftSidebar()
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
@@ -41,12 +40,10 @@ export function NavFavorites({
       <SidebarMenu>
         {favorites.map((item) => (
           <SidebarMenuItem key={item.name}>
-            <SidebarMenuButton asChild>
-              <a href={item.url} title={item.name}>
-                <span>{item.emoji}</span>
-                <span>{item.name}</span>
-              </a>
-            </SidebarMenuButton>
+            <a href={item.url} title={item.name} className="peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-hidden transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 h-8 text-sm">
+              <span>{item.emoji}</span>
+              <span>{item.name}</span>
+            </a>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuAction showOnHover>
@@ -82,10 +79,10 @@ export function NavFavorites({
           </SidebarMenuItem>
         ))}
         <SidebarMenuItem>
-          <SidebarMenuButton className="text-sidebar-foreground/70">
+          <button className="peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-hidden transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 h-8 text-sm text-sidebar-foreground/70">
             <MoreHorizontal />
             <span>More</span>
-          </SidebarMenuButton>
+          </button>
         </SidebarMenuItem>
       </SidebarMenu>
     </SidebarGroup>
