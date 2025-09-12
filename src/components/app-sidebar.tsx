@@ -4,13 +4,10 @@ import * as React from "react"
 import { Command } from "lucide-react"
 
 import { NavUser } from "@/components/nav-user"
-import { Label } from "@/components/ui/label"
 import {
     MultiSidebar,
-    useLeftSidebar,
 } from "@/components/ui/multi-sidebar"
-import { Switch } from "@/components/ui/switch"
-import { useNavMain, useActiveNavItem, useNavStore } from "@/stores/nav-store"
+import { useNavMain, useNavStore } from "@/stores/nav-store"
 
 // This is sample data
 const data = {
@@ -105,10 +102,20 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof MultiSidebar>) {
     const navMain = useNavMain()
-    const activeItem = useActiveNavItem()
     const { setActiveItem } = useNavStore()
-    const [mails, setMails] = React.useState(data.mails)
-    const { setOpen } = useLeftSidebar()
+    const [activePlugin, setActivePlugin] = React.useState<any>(null)
+
+    // 处理插件点击
+    const handlePluginClick = (item: any) => {
+        if (activePlugin?.id === item.id) {
+            // 如果点击的是当前激活的插件，关闭插件内容
+            setActivePlugin(null)
+        } else {
+            // 如果点击的是其他插件，激活该插件
+            setActivePlugin(item)
+            setActiveItem(item)
+        }
+    }
 
     return (
         <MultiSidebar
@@ -139,18 +146,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof MultiSideba
                                     {navMain.map((item) => (
                                         <li key={item.title} className="group/menu-item relative">
                                             <button
-                                                onClick={() => {
-                                                    setActiveItem(item)
-                                                    const mail = data.mails.sort(() => Math.random() - 0.5)
-                                                    setMails(
-                                                        mail.slice(
-                                                            0,
-                                                            Math.max(5, Math.floor(Math.random() * 10) + 1)
-                                                        )
-                                                    )
-                                                    setOpen(true)
-                                                }}
-                                                className={`peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-hidden transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 ${activeItem?.title === item.title ? 'bg-sidebar-accent font-medium text-sidebar-accent-foreground' : ''} px-2.5 md:px-2`}
+                                                onClick={() => handlePluginClick(item)}
+                                                className={`peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-hidden transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 ${activePlugin?.id === item.id ? 'bg-sidebar-accent font-medium text-sidebar-accent-foreground' : ''} px-2.5 md:px-2`}
                                             >
                                                 <item.icon className="size-4 shrink-0" />
                                                 <span className="truncate">{item.title}</span>
@@ -166,45 +163,86 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof MultiSideba
                     </div>
                 </div>
 
-                {/* This is the second sidebar - content sidebar */}
+                {/* This is the second sidebar - plugin content sidebar */}
                 <div className="hidden flex-1 md:flex flex-col bg-sidebar text-sidebar-foreground">
-                    <div className="flex flex-col gap-2 p-4 border-b">
-                        <div className="flex w-full items-center justify-between">
-                            <div className="text-foreground text-base font-medium">
-                                {activeItem?.title}
-                            </div>
-                            <Label className="flex items-center gap-2 text-sm">
-                                <span>Unreads</span>
-                                <Switch className="shadow-none" />
-                            </Label>
-                        </div>
-                        <input 
-                            placeholder="Type to search..." 
-                            className="bg-background h-8 w-full shadow-none rounded-md border border-input px-3 py-1 text-sm"
-                        />
-                    </div>
-                    <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto">
-                        <div className="relative flex w-full min-w-0 flex-col p-0">
-                            <div className="w-full text-sm">
-                                {mails.map((mail) => (
-                                    <a
-                                        href="#"
-                                        key={mail.email}
-                                        className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight whitespace-nowrap last:border-b-0"
-                                    >
-                                        <div className="flex w-full items-center gap-2">
-                                            <span>{mail.name}</span>{" "}
-                                            <span className="ml-auto text-xs">{mail.date}</span>
+                    {activePlugin ? (
+                        <>
+                            <div className="flex flex-col gap-2 p-4 border-b">
+                                <div className="flex w-full items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 flex items-center justify-center">
+                                            <activePlugin.icon className="size-4" />
                                         </div>
-                                        <span className="font-medium">{mail.subject}</span>
-                                        <span className="line-clamp-2 w-[260px] text-xs whitespace-break-spaces">
-                                            {mail.teaser}
-                                        </span>
-                                    </a>
-                                ))}
+                                        <div>
+                                            <div className="text-foreground text-base font-medium">
+                                                {activePlugin.title}
+                                            </div>
+                                            {activePlugin.description && (
+                                                <div className="text-muted-foreground text-sm">
+                                                    {activePlugin.description}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => {
+                                            setActivePlugin(null)
+                                        }}
+                                        className="w-6 h-6 flex items-center justify-center rounded hover:bg-accent hover:text-accent-foreground"
+                                        title="关闭插件"
+                                    >
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto">
+                                <div className="relative flex w-full min-w-0 flex-col p-4">
+                                    <div className="w-full text-sm">
+                                        {/* 这里显示插件内容 */}
+                                        <div className="plugin-content">
+                                            <h3 className="text-lg font-semibold mb-4">{activePlugin.title}</h3>
+                                            <div className="space-y-3">
+                                                <div className="p-3 bg-blue-50 rounded-lg">
+                                                    <p className="text-sm text-blue-800">插件功能</p>
+                                                    <p className="text-xs text-blue-600">{activePlugin.description}</p>
+                                                </div>
+                                                <div className="p-3 bg-green-50 rounded-lg">
+                                                    <p className="text-sm text-green-800">状态</p>
+                                                    <p className="text-xs text-green-600">已激活</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto">
+                            <div className="relative flex w-full min-w-0 flex-col p-4">
+                                <div className="w-full text-sm">
+                                    {/* 默认状态：没有激活插件时显示 */}
+                                    <div className="plugin-content">
+                                        <div className="flex flex-col items-center justify-center h-full text-center">
+                                            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                                                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                                                </svg>
+                                            </div>
+                                            <h3 className="text-lg font-semibold mb-2">选择插件</h3>
+                                            <p className="text-muted-foreground text-sm">
+                                                点击左侧的插件图标来查看详细信息
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
         </MultiSidebar>
