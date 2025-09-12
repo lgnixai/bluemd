@@ -52,7 +52,7 @@ export const PluginNav: React.FC<PluginNavProps> = ({ className = '' }) => {
             aria-label={plugin.name}
           >
             <div className="size-4 shrink-0">
-              {React.createElement(plugin.icon, { className: "size-4" })}
+              <plugin.icon className="size-4" />
             </div>
             <span className="truncate">
               {plugin.name}
