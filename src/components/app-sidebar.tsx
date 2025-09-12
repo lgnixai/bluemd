@@ -152,7 +152,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof MultiSideba
                                                 }}
                                                 className={`peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-hidden transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 ${activeItem?.title === item.title ? 'bg-sidebar-accent font-medium text-sidebar-accent-foreground' : ''} px-2.5 md:px-2`}
                                             >
-                                                <item.icon />
+                                                <item.icon className="size-4 shrink-0" />
                                                 <span className="truncate">{item.title}</span>
                                             </button>
                                         </li>
