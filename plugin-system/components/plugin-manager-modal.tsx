@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { usePluginManager, usePlugins } from '../contexts/plugin-context';
 import { Plugin } from '../types/plugin';
-import { useNavStore } from '../../../src/stores/nav-store';
+import { useNavStore } from '@/stores/nav-store';
 
 interface PluginManagerModalProps {
   open: boolean;
