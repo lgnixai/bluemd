@@ -1,0 +1,78 @@
+# Cursor AI 开发规则
+
+## 功能开发流程规则
+
+### 1. 功能开发完成后的测试要求
+- **必须执行**: 每个功能开发完成后，必须使用 MCP Playwright 进行浏览器自动化测试
+- **测试覆盖**: 测试必须覆盖新功能的所有主要用户交互流程
+- **测试验证**: 确保功能在浏览器中正常工作，无JavaScript错误
+- **测试记录**: 测试结果必须记录在提交信息中
+
+### 2. 测试执行标准
+- **自动化测试**: 使用 `mcp_playwright_browser_*` 工具进行测试
+- **功能验证**: 验证UI组件渲染、用户交互、状态管理等
+- **错误检查**: 检查浏览器控制台是否有错误信息
+- **响应式测试**: 确保在不同屏幕尺寸下功能正常
+
+### 3. 测试流程
+1. 启动开发服务器 (`pnpm dev`)
+2. 使用 Playwright 打开应用 (`mcp_playwright_browser_navigate`)
+3. 执行功能测试步骤
+4. 截图记录测试结果 (`mcp_playwright_browser_take_screenshot`)
+5. 检查控制台错误 (`mcp_playwright_browser_console_messages`)
+6. 关闭浏览器 (`mcp_playwright_browser_close`)
+
+### 4. 代码质量要求
+- **TypeScript**: 所有代码必须通过 TypeScript 类型检查
+- **ESLint**: 代码必须通过 ESLint 检查，无警告和错误
+- **组件规范**: React 组件必须遵循最佳实践
+- **性能优化**: 避免不必要的重渲染和内存泄漏
+
+### 5. 提交规范
+- **提交信息**: 必须包含功能描述、测试结果和修复的问题
+- **代码审查**: 提交前必须进行自我代码审查
+- **文档更新**: 如有必要，更新相关文档
+
+### 6. 插件系统特殊规则
+- **插件测试**: 每个新插件必须测试安装、启用、禁用、卸载流程
+- **侧边栏测试**: 测试左右侧边栏的显示/隐藏功能
+- **状态持久化**: 验证插件状态在页面刷新后保持
+- **错误处理**: 测试插件加载失败时的错误处理
+
+### 7. 测试失败处理
+- **修复优先**: 测试失败时必须优先修复问题
+- **重新测试**: 修复后必须重新执行完整测试流程
+- **问题记录**: 记录测试失败的原因和解决方案
+
+### 8. 工具使用规范
+- **Playwright工具**: 优先使用 MCP Playwright 工具进行测试
+- **浏览器兼容**: 确保功能在主流浏览器中正常工作
+- **性能监控**: 监控页面加载时间和响应性能
+
+## 示例测试流程
+
+```typescript
+// 1. 启动应用
+pnpm dev
+
+// 2. 打开浏览器
+mcp_playwright_browser_navigate({ url: "http://localhost:3000" })
+
+// 3. 执行测试步骤
+mcp_playwright_browser_click({ element: "插件管理按钮", ref: "..." })
+mcp_playwright_browser_take_screenshot({ filename: "plugin-manager.png" })
+
+// 4. 检查控制台
+mcp_playwright_browser_console_messages({ random_string: "check" })
+
+// 5. 关闭浏览器
+mcp_playwright_browser_close({ random_string: "close" })
+```
+
+## 违规处理
+- 未执行测试的功能开发将被视为未完成
+- 测试失败的功能必须修复后才能提交
+- 重复违反规则将影响开发流程的信任度
+
+---
+*此规则文件确保所有功能开发都经过充分的自动化测试验证*
