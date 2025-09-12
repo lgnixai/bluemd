@@ -32,8 +32,9 @@ export const PluginManagerModal: React.FC<PluginManagerModalProps> = ({
     try {
       pluginManager.installPlugin(plugin.id);
       pluginManager.enablePlugin(plugin.id);
-      // 更新导航数据
-      updateNavMain(plugins);
+      // 获取最新的插件数据并更新导航数据
+      const updatedPlugins = pluginManager.getPlugins();
+      updateNavMain(updatedPlugins);
     } catch (error) {
       console.error('Failed to install plugin:', error);
     } finally {
@@ -46,8 +47,9 @@ export const PluginManagerModal: React.FC<PluginManagerModalProps> = ({
    */
   const handleUninstall = (plugin: Plugin) => {
     pluginManager.uninstallPlugin(plugin.id);
-    // 更新导航数据
-    updateNavMain(plugins);
+    // 获取最新的插件数据并更新导航数据
+    const updatedPlugins = pluginManager.getPlugins();
+    updateNavMain(updatedPlugins);
   };
 
   /**
@@ -59,6 +61,9 @@ export const PluginManagerModal: React.FC<PluginManagerModalProps> = ({
     } else {
       pluginManager.enablePlugin(plugin.id);
     }
+    // 获取最新的插件数据并更新导航数据
+    const updatedPlugins = pluginManager.getPlugins();
+    updateNavMain(updatedPlugins);
   };
 
   /**
@@ -120,7 +125,7 @@ export const PluginManagerModal: React.FC<PluginManagerModalProps> = ({
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 flex items-center justify-center">
-                            <plugin.icon />
+                            {React.createElement(plugin.icon)}
                           </div>
                           <div>
                             <h4 className="font-medium">{plugin.name}</h4>

@@ -36,7 +36,7 @@ export const PluginSidebar: React.FC<PluginSidebarProps> = ({ className = '' }) 
       <div className="plugin-sidebar-header">
         <div className="plugin-sidebar-title">
           <div className="plugin-sidebar-icon">
-            <activePlugin.icon />
+            {React.createElement(activePlugin.icon)}
           </div>
           <div className="plugin-sidebar-info">
             <h3 className="plugin-sidebar-name">
