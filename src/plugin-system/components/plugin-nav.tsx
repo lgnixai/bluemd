@@ -89,7 +89,7 @@ export const PluginNavItem: React.FC<PluginNavItemProps> = ({
       aria-label={plugin.name}
     >
       <div className="size-4 shrink-0">
-        {plugin.icon}
+        {React.createElement(plugin.icon)}
       </div>
       <span className="truncate">
         {plugin.name}
