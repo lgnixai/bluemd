@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
-import { samplePlugins } from '../plugin-system/plugins/sample-plugins'
+import { samplePlugins } from '../plugins/sample-plugins-simple'
 
 // 导航项类型定义
 export interface NavItem {
@@ -84,7 +84,7 @@ export const useNavStore = create<NavState>()(
       updateNavMain: (plugins: any[]) => 
         set(() => ({
           navMain: plugins
-            .filter(plugin => plugin.config?.showInNav !== false && plugin.installed)
+            .filter(plugin => plugin.config?.showInNav !== false && plugin.config?.enabled)
             .sort((a, b) => (a.config?.position || 0) - (b.config?.position || 0))
             .map((plugin) => ({
               id: plugin.id,
@@ -92,7 +92,9 @@ export const useNavStore = create<NavState>()(
               description: plugin.description,
               icon: plugin.icon,
               isActive: false,
-              url: "#"
+              url: "#",
+              routes: plugin.routes, // 添加路由信息
+              config: plugin.config
             }))
         }), false, 'updateNavMain')
     }),

@@ -21,7 +21,7 @@ import {
   SidebarMenuAction,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
-import { useLeftSidebar } from '@/components/ui/multi-sidebar'
+import { useMultiSidebar } from '@/components/ui/multi-sidebar'
 
 export function NavFavorites({
   favorites,
@@ -32,7 +32,7 @@ export function NavFavorites({
     emoji: string
   }[]
 }) {
-  const { isMobile } = useLeftSidebar()
+  const { isMobile } = useMultiSidebar()
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">

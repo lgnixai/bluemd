@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>视频播放器</title>
+    <!-- HLS.js + Plyr 播放器 (参考UW Player) -->
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .player-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        video {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .controls-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .player-container:hover .controls-overlay {
+            opacity: 1;
+        }
+
+        .controls-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .play-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s ease;
+        }
+
+        .btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .btn-primary {
+            background: #e50914;
+        }
+
+        .btn-primary:hover {
+            background: #f40612;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress {
+            height: 100%;
+            background: #e50914;
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+
+        .time-display {
+            font-size: 12px;
+            color: #ccc;
+            margin-top: 5px;
+        }
+
+        .movie-info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 15px;
+            border-radius: 8px;
+            max-width: 300px;
+        }
+
+        .movie-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .movie-meta {
+            font-size: 12px;
+            color: #ccc;
+            margin-bottom: 10px;
+        }
+
+        .episode-info {
+            font-size: 14px;
+            color: #fff;
+        }
+
+        .episode-list {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border-radius: 8px;
+            max-width: 250px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .episode-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            font-size: 12px;
+            transition: background 0.2s ease;
+        }
+
+        .episode-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .episode-item.active {
+            background: #e50914;
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid #e50914;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #e50914;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            background: rgba(0,0,0,0.9);
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .volume-slider {
+            width: 80px;
+            height: 4px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 2px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            background: #e50914;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        /* 响应式视频尺寸控制 */
+        @media (max-width: 768px) {
+            .movie-info {
+                max-width: 200px;
+                padding: 10px;
+                font-size: 14px;
+            }
+            
+            .episode-list {
+                max-width: 180px;
+                padding: 10px;
+            }
+            
+            .movie-title {
+                font-size: 16px;
+            }
+        }
+
+        /* 确保视频居中且保持宽高比 */
+        .plyr {
+            max-width: 100% !important;
+            max-height: 100% !important;
+        }
+
+        .plyr__video-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .plyr__video-wrapper video {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="player-container">
+        <div class="video-wrapper">
+            <video id="hls-video" controls poster="" style="width: 100%; height: 100%; object-fit: contain;"></video>
+            
+            <div class="loading" id="loading" style="display: none;">
+                <div class="spinner"></div>
+                <div>加载中...</div>
+            </div>
+            
+            <div class="error" id="error" style="display: none;">
+                <div>❌ 视频加载失败</div>
+                <div id="errorMessage"></div>
+            </div>
+        </div>
+
+
+        <div class="movie-info" id="movieInfo">
+            <div class="movie-title" id="movieTitle">加载中...</div>
+            <div class="movie-meta" id="movieMeta">-</div>
+            <div class="episode-info" id="episodeInfo">第1集</div>
+        </div>
+
+        <div class="episode-list" id="episodeList">
+            <div style="font-weight: bold; margin-bottom: 10px;">剧集列表</div>
+            <div id="episodes"></div>
+        </div>
+
+        <button class="close-btn" id="closeBtn" onclick="window.close()">×</button>
+    </div>
+
+    <script>
+        class XGVideoPlayer {
+            constructor() {
+                this.player = null;
+                this.currentMovie = null;
+                this.currentEpisode = null;
+                this.episodes = [];
+                
+                this.initElements();
+                this.initEventListeners();
+                this.loadMovieData();
+            }
+
+            initElements() {
+                this.loadingEl = document.getElementById('loading');
+                this.errorEl = document.getElementById('error');
+                this.errorMessageEl = document.getElementById('errorMessage');
+                this.movieTitleEl = document.getElementById('movieTitle');
+                this.movieMetaEl = document.getElementById('movieMeta');
+                this.episodeInfoEl = document.getElementById('episodeInfo');
+                this.episodesEl = document.getElementById('episodes');
+            }
+
+            initEventListeners() {
+                // 键盘快捷键
+                document.addEventListener('keydown', (e) => this.handleKeydown(e));
+            }
+
+            async loadMovieData() {
+                try {
+                    this.showLoading();
+                    
+                    // 从URL参数获取电影ID
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const movieId = urlParams.get('movieId') || '63567';
+                    
+                    console.log('🎬 开始加载电影数据, movieId:', movieId);
+                    
+                    // 获取电影详情
+                    const response = await fetch(`http://localhost:6066/v1/movies/${movieId}?include_episodes=true`);
+                    const data = await response.json();
+                    
+                    console.log('📡 API响应:', data);
+                    
+                    if (data.code === 0 && data.data) {
+                        this.currentMovie = data.data;
+                        this.episodes = data.data.episodes || [];
+                        this.updateMovieInfo();
+                        this.updateEpisodeList();
+                        
+                        console.log('🎥 电影信息:', this.currentMovie);
+                        console.log('📺 剧集列表:', this.episodes);
+                        
+                        if (this.episodes.length > 0) {
+                            this.currentEpisode = this.episodes[0];
+                            console.log('🎯 当前剧集:', this.currentEpisode);
+                            console.log('🔗 播放地址:', this.currentEpisode.play_url);
+                            this.loadVideo(this.currentEpisode.play_url);
+                        } else {
+                            console.warn('⚠️ 没有找到剧集数据');
+                            this.showError('没有找到可播放的剧集');
+                        }
+                    } else {
+                        throw new Error('获取电影数据失败: ' + (data.message || '未知错误'));
+                    }
+                } catch (error) {
+                    console.error('❌ 加载电影数据失败:', error);
+                    this.showError('加载电影数据失败: ' + error.message);
+                }
+            }
+
+            updateMovieInfo() {
+                if (this.currentMovie) {
+                    this.movieTitleEl.textContent = this.currentMovie.name || '未知电影';
+                    this.movieMetaEl.textContent = `${this.currentMovie.year || ''} • ${this.currentMovie.area || ''} • ${this.currentMovie.category?.name || ''}`;
+                }
+            }
+
+            updateEpisodeList() {
+                this.episodesEl.innerHTML = '';
+                this.episodes.forEach((episode, index) => {
+                    const episodeEl = document.createElement('div');
+                    episodeEl.className = 'episode-item';
+                    episodeEl.textContent = `第${episode.episode}集`;
+                    episodeEl.addEventListener('click', () => this.switchEpisode(episode));
+                    this.episodesEl.appendChild(episodeEl);
+                });
+            }
+
+            loadVideo(url) {
+                try {
+                    console.log('🎬 开始加载视频:', url);
+                    this.showLoading();
+                    
+                    // 销毁之前的播放器
+                    if (this.player) {
+                        console.log('🗑️ 销毁之前的播放器');
+                        this.player = null;
+                    }
+                    
+                    // 检查HLS.js和Plyr是否可用
+                    console.log('🔍 检查播放器:');
+                    console.log('  - window.Hls:', !!window.Hls);
+                    console.log('  - window.Plyr:', !!window.Plyr);
+                    
+                    if (!window.Hls || !window.Plyr) {
+                        console.error('❌ HLS.js或Plyr未加载');
+                        this.showError('播放器组件未加载，请刷新页面重试');
+                        return;
+                    }
+                    
+                    console.log('✅ 开始创建HLS.js + Plyr播放器');
+                    
+                    // 获取视频元素
+                    const video = document.getElementById('hls-video');
+                    if (!video) {
+                        console.error('❌ 找不到视频元素');
+                        this.showError('找不到视频元素');
+                        return;
+                    }
+                    
+                    // 清空之前的播放器
+                    if (this.player) {
+                        this.player.destroy();
+                    }
+                    if (this.hls) {
+                        this.hls.destroy();
+                    }
+                    
+                    // 检查是否支持HLS
+                    if (window.Hls.isSupported()) {
+                        console.log('🎬 使用HLS.js播放m3u8');
+                        
+                        // 创建HLS实例
+                        this.hls = new window.Hls({
+                            backBufferLength: 2000,
+                            maxBufferLength: 30,
+                            maxMaxBufferLength: 60,
+                            liveSyncDurationCount: 3,
+                            liveMaxLatencyDurationCount: 5
+                        });
+                        
+                        // 加载视频源
+                        this.hls.loadSource(url);
+                        
+                        // 当清单解析完成时
+                        this.hls.on(window.Hls.Events.MANIFEST_PARSED, (event, data) => {
+                            console.log('📋 HLS清单解析完成');
+                            
+                            // 获取可用质量
+                            const availableQualities = this.hls.levels.map(level => level.height);
+                            console.log('📊 可用质量:', availableQualities);
+                            
+                            // 创建Plyr播放器
+                            this.player = new window.Plyr(video, {
+                                autoplay: false,
+                                controls: [
+                                    'play-large',
+                                    'play',
+                                    'fast-forward',
+                                    'progress',
+                                    'current-time',
+                                    'duration',
+                                    'mute',
+                                    'volume',
+                                    'captions',
+                                    'settings',
+                                    'pip',
+                                    'airplay',
+                                    'download',
+                                    'fullscreen'
+                                ],
+                                quality: {
+                                    default: availableQualities[0],
+                                    options: availableQualities,
+                                    forced: true,
+                                    onChange: (quality) => this.updateQuality(quality)
+                                }
+                            });
+                            
+                            // 绑定HLS到视频元素
+                            this.hls.attachMedia(video);
+                            
+                            // 设置事件监听器
+                            this.setupPlayerEvents();
+                            
+                            console.log('✅ HLS.js + Plyr播放器创建完成');
+                            this.hideLoading();
+                        });
+                        
+                        // HLS错误处理
+                        this.hls.on(window.Hls.Events.ERROR, (event, data) => {
+                            console.error('❌ HLS错误:', data);
+                            if (data.fatal) {
+                                this.showError('HLS播放错误: ' + data.details);
+                            }
+                        });
+                        
+                    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                        console.log('🍎 使用Safari原生HLS支持');
+                        
+                        // Safari原生HLS支持
+                        video.src = url;
+                        
+                        // 创建Plyr播放器
+                        this.player = new window.Plyr(video, {
+                            autoplay: false,
+                            controls: [
+                                'play-large',
+                                'play',
+                                'fast-forward',
+                                'progress',
+                                'current-time',
+                                'duration',
+                                'mute',
+                                'volume',
+                                'captions',
+                                'settings',
+                                'pip',
+                                'airplay',
+                                'download',
+                                'fullscreen'
+                            ]
+                        });
+                        
+                        // 设置事件监听器
+                        this.setupPlayerEvents();
+                        
+                        console.log('✅ Safari原生HLS播放器创建完成');
+                        this.hideLoading();
+                        
+                    } else {
+                        console.error('❌ 浏览器不支持HLS');
+                        this.showError('浏览器不支持HLS播放');
+                    }
+                    
+                    console.log('🎯 HLS.js + Plyr播放器创建完成');
+                    
+                } catch (error) {
+                    console.error('❌ 创建播放器失败:', error);
+                    this.showError('播放器创建失败: ' + error.message);
+                }
+            }
+
+
+            // 更新视频质量
+            updateQuality(quality) {
+                if (this.hls && this.hls.levels) {
+                    this.hls.levels.forEach((level, levelIndex) => {
+                        if (level.height === quality) {
+                            this.hls.currentLevel = levelIndex;
+                            console.log('🎯 切换到质量:', quality);
+                        }
+                    });
+                }
+            }
+            
+            // 设置播放器事件监听器
+            setupPlayerEvents() {
+                if (!this.player) return;
+                
+                // 播放事件
+                this.player.on('play', () => {
+                    console.log('▶️ 开始播放');
+                    this.isPlaying = true;
+                });
+                
+                // 暂停事件
+                this.player.on('pause', () => {
+                    console.log('⏸️ 暂停播放');
+                    this.isPlaying = false;
+                });
+                
+                // 错误事件
+                this.player.on('error', (event) => {
+                    console.error('❌ 播放器错误:', event);
+                    this.showError('播放器错误: ' + event.detail);
+                });
+                
+                // 准备就绪事件
+                this.player.on('ready', () => {
+                    console.log('✅ 播放器准备就绪');
+                    this.hideLoading();
+                });
+            }
+
+            switchEpisode(episode) {
+                this.currentEpisode = episode;
+                this.episodeInfoEl.textContent = `第${episode.episode}集`;
+                
+                // 更新剧集列表选中状态
+                document.querySelectorAll('.episode-item').forEach((el, index) => {
+                    el.classList.toggle('active', this.episodes[index].id === episode.id);
+                });
+                
+                this.loadVideo(episode.play_url);
+            }
+
+            handleKeydown(e) {
+                if (!this.player) return;
+                
+                switch(e.code) {
+                    case 'Space':
+                        e.preventDefault();
+                        if (this.player.paused) {
+                            this.player.play();
+                        } else {
+                            this.player.pause();
+                        }
+                        break;
+                    case 'Escape':
+                        if (document.fullscreenElement) {
+                            document.exitFullscreen();
+                        }
+                        break;
+                    case 'KeyF':
+                        e.preventDefault();
+                        this.player.fullscreen();
+                        break;
+                }
+            }
+
+            showLoading() {
+                this.loadingEl.style.display = 'block';
+                this.errorEl.style.display = 'none';
+            }
+
+            hideLoading() {
+                this.loadingEl.style.display = 'none';
+            }
+
+            showError(message) {
+                this.loadingEl.style.display = 'none';
+                this.errorEl.style.display = 'block';
+                this.errorMessageEl.textContent = message;
+            }
+        }
+
+        // 初始化播放器
+        document.addEventListener('DOMContentLoaded', () => {
+            new XGVideoPlayer();
+        });
+    </script>
+</body>
+</html>

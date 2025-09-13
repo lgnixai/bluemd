@@ -22,7 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useLeftSidebar } from '@/components/ui/multi-sidebar'
+import { useMultiSidebar } from '@/components/ui/multi-sidebar'
 
 export function NavUser({
   user,
@@ -33,7 +33,7 @@ export function NavUser({
     avatar: string
   }
 }) {
-  const { isMobile } = useLeftSidebar()
+  const { isMobile } = useMultiSidebar()
 
   return (
     <div className="group/menu-item relative">

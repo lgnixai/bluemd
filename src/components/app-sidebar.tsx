@@ -9,7 +9,8 @@ import {
     useLeftSidebar,
 } from "@/components/ui/multi-sidebar"
 import { useNavMain, useNavStore } from "@/stores/nav-store"
-import { PluginManagerModal } from "../plugin-system"
+import { PluginManagerModal } from "./plugin-manager-modal"
+import { MovieSearchSidebar } from "@/plugins/movie-plugin/components/MovieSearchSidebar"
 
 // This is sample data
 const data = {
@@ -227,17 +228,28 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof MultiSideba
                                     <div className="w-full text-sm">
                                         {/* 这里显示插件内容 */}
                                         <div className="plugin-content">
-                                            <h3 className="text-lg font-semibold mb-4">{activePlugin.title}</h3>
-                                            <div className="space-y-3">
-                                                <div className="p-3 bg-blue-50 rounded-lg">
-                                                    <p className="text-sm text-blue-800">插件功能</p>
-                                                    <p className="text-xs text-blue-600">{activePlugin.description}</p>
-                                                </div>
-                                                <div className="p-3 bg-green-50 rounded-lg">
-                                                    <p className="text-sm text-green-800">状态</p>
-                                                    <p className="text-xs text-green-600">已激活</p>
-                                                </div>
-                                            </div>
+                                            {activePlugin.id === 'movie-data' ? (
+                                                // 电影插件显示搜索条件
+                                                <MovieSearchSidebar />
+                                            ) : activePlugin.routes && activePlugin.routes.length > 0 ? (
+                                                // 渲染插件的实际组件
+                                                React.createElement(activePlugin.routes[0].component)
+                                            ) : (
+                                                // 显示默认的插件信息
+                                                <>
+                                                    <h3 className="text-lg font-semibold mb-4">{activePlugin.title}</h3>
+                                                    <div className="space-y-3">
+                                                        <div className="p-3 bg-blue-50 rounded-lg">
+                                                            <p className="text-sm text-blue-800">插件功能</p>
+                                                            <p className="text-xs text-blue-600">{activePlugin.description}</p>
+                                                        </div>
+                                                        <div className="p-3 bg-green-50 rounded-lg">
+                                                            <p className="text-sm text-green-800">状态</p>
+                                                            <p className="text-xs text-green-600">已激活</p>
+                                                        </div>
+                                                    </div>
+                                                </>
+                                            )}
                                         </div>
                                     </div>
                                 </div>

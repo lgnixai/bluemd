@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import { ThemeProvider } from '@/components/theme-provider'
-import { PluginProvider, usePluginManager, samplePlugins } from './plugin-system'
+import { PluginProvider, usePluginManager } from './contexts/plugin-context'
+import { samplePlugins } from './plugins/sample-plugins-simple'
 import Dashboard from './dashboard/page'
 import { useEffect } from 'react'
 
