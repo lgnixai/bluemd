@@ -1,20 +1,27 @@
 import { Routes, Route } from 'react-router-dom'
 import { ThemeProvider } from '@/components/theme-provider'
 import { PluginProvider, usePluginManager } from './contexts/plugin-context'
-import { samplePlugins } from './plugins/sample-plugins-simple'
+import { moviePlugin } from './plugins/movie-plugin'
+import { rssPlugin } from './plugins/rss-plugin'
+import { useNavStore } from './stores/nav-store'
 import Dashboard from './dashboard/page'
 import { useEffect } from 'react'
 
 // 插件初始化组件
 function PluginInitializer() {
   const pluginManager = usePluginManager()
+  const { initializeNavFromPlugins } = useNavStore()
   
   useEffect(() => {
-    // 注册示例插件
-    samplePlugins.forEach(plugin => {
-      pluginManager.registerPlugin(plugin)
-    })
-  }, [pluginManager])
+    // 注册插件
+    pluginManager.registerPlugin(moviePlugin)
+    pluginManager.registerPlugin(rssPlugin)
+    
+    // 延迟初始化导航，确保所有插件都已注册
+    setTimeout(() => {
+      initializeNavFromPlugins()
+    }, 100)
+  }, [pluginManager, initializeNavFromPlugins])
   
   return null
 }

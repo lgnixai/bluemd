@@ -1,7 +1,8 @@
 import { AppSidebar } from "@/components/app-sidebar"
 import { MovieSearchResults } from "@/plugins/movie-plugin/components/MovieSearchResults"
-import { useMovieSearchStore } from "@/stores/movie-search-store"
+import { MovieSearchSidebar } from "@/plugins/movie-plugin/components/MovieSearchSidebar"
 import { useNavStore } from "@/stores/nav-store"
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import { SidebarRight } from '@/components/sidebar-right'
 import {
@@ -17,47 +18,50 @@ import {
   MultiSidebarTrigger,
 } from '@/components/ui/multi-sidebar'
 
+// 创建QueryClient实例
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5分钟
+      retry: 1,
+    },
+  },
+});
+
 function ContentArea() {
   const { activeItem } = useNavStore();
-  const { movies, loading, total, currentPage, totalPages, setCurrentPage, filters } = useMovieSearchStore();
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    // 触发新的搜索
-    if (activeItem?.id === 'movie-data') {
-      // 这里需要调用搜索函数，但我们需要从MovieSearchSidebar获取搜索函数
-      // 暂时通过事件系统来处理
-      window.dispatchEvent(new CustomEvent('movie-search', { 
-        detail: { filters, page } 
-      }));
-    }
-  };
 
   const handleMovieClick = (movie: any) => {
     console.log('点击电影:', movie);
     // 这里可以添加电影详情页面或弹窗
   };
 
-  // 如果激活的是电影插件，显示搜索结果
+  // 如果激活的是电影插件，显示搜索界面（左侧搜索条件，右侧搜索结果）
   if (activeItem?.id === 'movie-data') {
     return (
-      <MovieSearchResults
-        movies={movies}
-        loading={loading}
-        total={total}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-        onMovieClick={handleMovieClick}
-      />
+      <QueryClientProvider client={queryClient}>
+        <div className="flex h-full">
+          {/* 左侧：搜索条件区域 */}
+          {/* <div className="w-80 border-r bg-gray-50 overflow-y-auto">
+            <MovieSearchSidebar />
+          </div>
+           */}
+        
+          <div className="flex-1 overflow-y-auto">
+            <MovieSearchResults
+              onMovieClick={handleMovieClick}
+            />
+          </div>
+        </div>
+      </QueryClientProvider>
     );
   }
+
 
   // 默认内容
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">
-      <div className="bg-muted/50 mx-auto h-24 w-full max-w-3xl rounded-xl" />
-      <div className="bg-muted/50 mx-auto h-[100vh] w-full max-w-3xl rounded-xl" />
+      <div className="bg-muted/50 mx-auto h-[100vh] w-full max-w-3xl rounded-xl" >内容区</div>
     </div>
   );
 }

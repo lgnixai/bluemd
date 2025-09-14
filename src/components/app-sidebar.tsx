@@ -231,6 +231,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof MultiSideba
                                             {activePlugin.id === 'movie-data' ? (
                                                 // 电影插件显示搜索条件
                                                 <MovieSearchSidebar />
+                                            ) : activePlugin.component ? (
+                                                // 渲染插件的component属性
+                                                React.createElement(activePlugin.component)
                                             ) : activePlugin.routes && activePlugin.routes.length > 0 ? (
                                                 // 渲染插件的实际组件
                                                 React.createElement(activePlugin.routes[0].component)

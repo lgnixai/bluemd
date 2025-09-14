@@ -13,7 +13,6 @@ src/plugins/
 │   ├── plugin-template/     # 基础插件模板
 │   ├── create-plugin.ts     # 插件创建工具
 │   └── PluginWizard.tsx     # 插件创建向导
-├── weather-plugin/          # 示例插件
 └── README.md               # 本文档
 ```
 
@@ -305,14 +304,6 @@ try {
 
 ## 示例插件
 
-### 天气插件
-
-天气插件展示了如何创建一个完整的插件：
-
-- 插件配置和生命周期
-- 自定义Hook和状态管理
-- 组件开发和UI设计
-- 类型定义和工具函数
 
 ### 插件模板
 

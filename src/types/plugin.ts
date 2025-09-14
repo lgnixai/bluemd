@@ -16,6 +16,8 @@ export interface Plugin {
   author: string;
   /** 插件图标组件 */
   icon: React.ComponentType;
+  /** 插件主组件 */
+  component?: React.ComponentType;
   /** 插件分类 */
   category: string;
   /** 插件配置 */

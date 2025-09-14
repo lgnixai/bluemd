@@ -44,43 +44,90 @@ export interface Episode {
   updated_at: string
 }
 
-// 电影数据接口
-export interface Movie {
-  id: number
-  vod_id: number
-  name: string
+// 电影URL信息
+export interface MovieUrlInfo {
+  episode: string
+  link: string
+}
+
+// 电影描述信息
+export interface MovieDescriptor {
+  sub_title?: string
+  c_name?: string
   en_name?: string
-  alias?: string
-  cover?: string
-  director?: string
+  initial?: string
+  class_tag?: string
   actor?: string
+  director?: string
+  writer?: string
+  blurb?: string
+  remarks?: string
+  release_date?: string
   area?: string
   language?: string
   year?: string
-  duration?: string
-  score?: string
-  quality?: string
-  content?: string
+  state?: string
   update_time?: string
-  total_play?: number
+  add_time?: number
+  db_id?: number
+  db_score?: string
+  hits?: number
+  content?: string
+}
+
+// 电影数据接口 - 匹配服务端API
+export interface Movie {
+  id: number
+  vod_id: number
+  cid: number
+  pid: number
+  name: string
+  picture?: string
+  play_from?: string[]
+  down_from?: string
+  play_list?: MovieUrlInfo[][]
+  download_list?: MovieUrlInfo[][]
+  descriptor?: MovieDescriptor
   category_id?: number
   category?: {
     id: number
     type_id: number
+    pid: number
     name: string
-    link: string
+    show: boolean
+    parent_id?: number
+    created_at: string
+    updated_at: string
   }
-  episodes?: Episode[]
   created_at: string
   updated_at: string
 }
 
-// 电影统计信息
+// 电影统计信息 - 匹配服务端API
 export interface MovieStats {
   total_movies: number
+  total_categories: number
   recent_movies: number
-  total_pages: number
-  last_updated: string
+}
+
+// 分类信息
+export interface Category {
+  id: number
+  type_id: number
+  pid: number
+  name: string
+  show: boolean
+  parent_id?: number
+  parent?: Category
+  children: Category[]
+  created_at: string
+  updated_at: string
+}
+
+// 分类列表响应
+export interface CategoryListResponse {
+  categories: Category[]
+  total: number
 }
 
 // 采集任务状态
@@ -120,9 +167,11 @@ export class ApiService {
   async getMovies(params?: {
     page?: number
     page_size?: number
-    search?: string
-    genre?: string
-  }): Promise<ApiResponse<{ data: Movie[]; total: number; page: number; page_size: number; total_pages: number }>> {
+    category_id?: number
+    keyword?: string
+    sort_by?: string
+    sort_order?: string
+  }): Promise<ApiResponse<{ movies: Movie[]; total: number; page: number; page_size: number; total_page: number }>> {
     return apiClient.get('/movies', params)
   }
 
@@ -134,17 +183,54 @@ export class ApiService {
   }
 
   /**
-   * 获取电影详情（包含剧集信息）
+   * 根据VodID获取电影详情
    */
-  async getMovieWithEpisodes(id: number): Promise<ApiResponse<Movie>> {
-    return apiClient.get(`/movies/${id}?include_episodes=true`)
+  async getMovieByVodId(vodId: number): Promise<ApiResponse<Movie>> {
+    return apiClient.get(`/movies/vod/${vodId}`)
+  }
+
+  /**
+   * 搜索电影
+   */
+  async searchMovies(params?: {
+    keyword?: string
+    page?: number
+    page_size?: number
+    category_id?: number
+    pid?: number
+    cid?: number
+    year?: number
+    area?: string
+    language?: string
+    plot?: string
+    remarks?: string
+    begin_time?: string
+    end_time?: string
+    sort_by?: string
+    sort_order?: string
+  }): Promise<ApiResponse<{ movies: Movie[]; total: number; page: number; page_size: number; total_page: number }>> {
+    return apiClient.get('/movies/search', params)
   }
 
   /**
    * 获取电影统计信息
    */
   async getMovieStats(): Promise<ApiResponse<MovieStats>> {
-    return apiClient.get('/spider/stats')
+    return apiClient.get('/movies/stats')
+  }
+
+  /**
+   * 获取分类列表
+   */
+  async getCategories(): Promise<ApiResponse<CategoryListResponse>> {
+    return apiClient.get('/categories')
+  }
+
+  /**
+   * 根据TypeID获取分类详情
+   */
+  async getCategoryByTypeId(typeId: number): Promise<ApiResponse<Category>> {
+    return apiClient.get(`/categories/type/${typeId}`)
   }
 
   /**
@@ -168,23 +254,6 @@ export class ApiService {
     return apiClient.get(`/spider/tasks/${id}`)
   }
 
-  /**
-   * 获取 RSS 源列表
-   */
-  async getRssFeeds(): Promise<ApiResponse<any[]>> {
-    return apiClient.get('/rss/feeds')
-  }
-
-  /**
-   * 创建 RSS 源
-   */
-  async createRssFeed(feedData: {
-    name: string
-    url: string
-    description?: string
-  }): Promise<ApiResponse<any>> {
-    return apiClient.post('/rss/feeds', feedData)
-  }
 }
 
 // 创建默认 API 服务实例

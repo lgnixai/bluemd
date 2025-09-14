@@ -1,15 +1,12 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Search, Filter } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useMovieSearchStore } from '@/stores/movie-search-store';
-import { apiService } from '@/lib/api-service';
+import { CategorySelector } from '@/components/CategorySelector';
 
-const categories = [
-  '全部', '电影', '电视剧', '综艺', '动漫', '纪录片', 
-  '短剧', '体育', '儿童', '音乐', '戏曲', '资讯', '其他'
-];
+// 移除硬编码的分类数据，改为使用API获取
 
 const years = [
   '全部', '2025', '2024', '2023', '2022', '2021', '2020', 
@@ -25,37 +22,15 @@ const sortOptions = [
   '按更新', '周人气', '月人气'
 ];
 
+// 排序选项映射
+const sortMapping: Record<string, { sort_by: string; sort_order: string }> = {
+  '按更新': { sort_by: 'created_at', sort_order: 'desc' },
+  '周人气': { sort_by: 'score', sort_order: 'desc' },
+  '月人气': { sort_by: 'score', sort_order: 'desc' }
+};
+
 export const MovieSearchSidebar: React.FC = () => {
-  const { filters, setFilters, setLoading, setError, setMovies, setTotal, setCurrentPage, setTotalPages } = useMovieSearchStore();
-
-  const searchMovies = async (searchFilters: typeof filters, page: number = 1) => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const params: any = {
-        page,
-        page_size: 20
-      };
-
-      // 添加搜索参数
-      if (searchFilters.keyword) params.keyword = searchFilters.keyword;
-      if (searchFilters.category && searchFilters.category !== '全部') params.category = searchFilters.category;
-      if (searchFilters.year && searchFilters.year !== '全部') params.year = searchFilters.year;
-      if (searchFilters.area && searchFilters.area !== '全部') params.area = searchFilters.area;
-
-      const moviesResponse = await apiService.getMovies(params);
-
-      setMovies(moviesResponse.data.data);
-      setCurrentPage(moviesResponse.data.page);
-      setTotalPages(moviesResponse.data.total_pages);
-      setTotal(moviesResponse.data.total);
-    } catch (error) {
-      setError(error instanceof Error ? error.message : '搜索失败');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { filters, setFilters } = useMovieSearchStore();
 
   const handleKeywordChange = (value: string) => {
     const newFilters = { ...filters, keyword: value };
@@ -65,12 +40,32 @@ export const MovieSearchSidebar: React.FC = () => {
   const handleFilterChange = (type: keyof Omit<typeof filters, 'keyword'>, value: string) => {
     const newFilters = { ...filters, [type]: value };
     setFilters(newFilters);
-    // 自动搜索
-    searchMovies(newFilters, 1);
+  };
+
+  // 处理分类联动变化
+  const handleCategoryChange = (typeId: number | null, categoryId: number | null) => {
+    const newFilters = { ...filters };
+    
+    if (categoryId) {
+      // 如果选择了二级分类，使用categoryId
+      newFilters.category = categoryId.toString();
+      newFilters.categoryType = 'cid'; // 标记为二级分类
+    } else if (typeId) {
+      // 如果选择了一级分类，使用typeId
+      newFilters.category = typeId.toString();
+      newFilters.categoryType = 'pid'; // 标记为一级分类
+    } else {
+      // 如果选择了"全部"，重置分类
+      newFilters.category = '全部';
+      newFilters.categoryType = null;
+    }
+    
+    setFilters(newFilters);
   };
 
   const handleSearch = () => {
-    searchMovies(filters, 1);
+    // 搜索逻辑由MovieSearchResults组件处理
+    // 这里只需要触发filters更新即可
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -79,18 +74,7 @@ export const MovieSearchSidebar: React.FC = () => {
     }
   };
 
-  // 监听分页事件
-  useEffect(() => {
-    const handleMovieSearch = (event: CustomEvent) => {
-      const { filters: searchFilters, page } = event.detail;
-      searchMovies(searchFilters, page);
-    };
-
-    window.addEventListener('movie-search', handleMovieSearch as EventListener);
-    return () => {
-      window.removeEventListener('movie-search', handleMovieSearch as EventListener);
-    };
-  }, []);
+  // 移除搜索逻辑，由MovieSearchResults组件处理
 
   const renderFilterSection = (
     title: string,
@@ -118,6 +102,8 @@ export const MovieSearchSidebar: React.FC = () => {
     </div>
   );
 
+  // 移除不再需要的renderCategorySection函数
+
   return (
     <div>
       {/* 关键字搜索 */}
@@ -144,37 +130,16 @@ export const MovieSearchSidebar: React.FC = () => {
         </div>
       </div>
 
-      {/* 当前筛选条件 */}
-      {(filters.category !== '全部' || filters.year !== '全部' || filters.area !== '全部') && (
-        <div className="mb-4">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">当前筛选</h3>
-          <div className="flex flex-wrap gap-2">
-            {filters.category !== '全部' && (
-              <Badge variant="secondary" className="bg-red-100 text-red-700">
-                分类: {filters.category}
-              </Badge>
-            )}
-            {filters.year !== '全部' && (
-              <Badge variant="secondary" className="bg-red-100 text-red-700">
-                年份: {filters.year}
-              </Badge>
-            )}
-            {filters.area !== '全部' && (
-              <Badge variant="secondary" className="bg-red-100 text-red-700">
-                地区: {filters.area}
-              </Badge>
-            )}
-          </div>
-        </div>
-      )}
+      {/* 移除当前筛选条件显示区块 */}
 
-      {/* 分类筛选 */}
-      {renderFilterSection(
-        '分类',
-        categories,
-        filters.category,
-        (value) => handleFilterChange('category', value)
-      )}
+      {/* 分类联动筛选 */}
+      <div className="mb-4">
+        <CategorySelector
+          onCategoryChange={handleCategoryChange}
+          selectedTypeId={filters.category !== '全部' ? parseInt(filters.category) : null}
+          className="w-full"
+        />
+      </div>
 
       {/* 年份筛选 */}
       {renderFilterSection(

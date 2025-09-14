@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DPlayer 视频播放器</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/dplayer@1.27.0/dist/DPlayer.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .player-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dplayer-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .movie-info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border-radius: 8px;
+            max-width: 300px;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .movie-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #fff;
+        }
+
+        .movie-meta {
+            font-size: 12px;
+            color: #ccc;
+            margin-bottom: 10px;
+        }
+
+        .episode-info {
+            font-size: 14px;
+            color: #fff;
+        }
+
+        .episode-list {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border-radius: 8px;
+            max-width: 250px;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .episode-list-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .episode-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            font-size: 12px;
+            transition: all 0.2s ease;
+            color: #ccc;
+        }
+
+        .episode-item:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+
+        .episode-item.active {
+            background: #e50914;
+            color: #fff;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            backdrop-filter: blur(10px);
+        }
+
+        .close-btn:hover {
+            background: rgba(0,0,0,0.9);
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 1000;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid #e50914;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #e50914;
+            z-index: 1000;
+        }
+
+        .controls-overlay {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .player-container:hover .controls-overlay {
+            opacity: 1;
+        }
+
+        .controls-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .play-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s ease;
+        }
+
+        .btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .btn-primary {
+            background: #e50914;
+        }
+
+        .btn-primary:hover {
+            background: #f40612;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress {
+            height: 100%;
+            background: #e50914;
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+
+        .time-display {
+            font-size: 12px;
+            color: #ccc;
+            margin-top: 5px;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .movie-info {
+                max-width: 200px;
+                padding: 10px;
+                font-size: 14px;
+            }
+            
+            .episode-list {
+                max-width: 180px;
+                padding: 10px;
+            }
+            
+            .movie-title {
+                font-size: 16px;
+            }
+
+            .controls-overlay {
+                bottom: 10px;
+                left: 10px;
+                right: 10px;
+                padding: 10px;
+            }
+        }
+
+        /* DPlayer 自定义样式 */
+        .dplayer {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .dplayer-video-wrap {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .dplayer-video {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: contain !important;
+        }
+
+        /* 隐藏DPlayer的默认控制栏，使用自定义控制栏 */
+        .dplayer-controller {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="player-container">
+        <div class="dplayer-container">
+            <div id="dplayer"></div>
+            
+            <div class="loading" id="loading" style="display: none;">
+                <div class="spinner"></div>
+                <div>加载中...</div>
+            </div>
+            
+            <div class="error" id="error" style="display: none;">
+                <div>❌ 视频加载失败</div>
+                <div id="errorMessage"></div>
+            </div>
+        </div>
+
+        <div class="movie-info" id="movieInfo">
+            <div class="movie-title" id="movieTitle">加载中...</div>
+            <div class="movie-meta" id="movieMeta">-</div>
+            <div class="episode-info" id="episodeInfo">第1集</div>
+        </div>
+
+        <div class="episode-list" id="episodeList">
+            <div class="episode-list-title">剧集列表</div>
+            <div id="episodes"></div>
+        </div>
+
+        <div class="controls-overlay" id="controlsOverlay">
+            <div class="controls-bar">
+                <div class="play-controls">
+                    <button class="btn" id="playBtn" onclick="togglePlay()">播放</button>
+                    <button class="btn" onclick="toggleMute()">静音</button>
+                    <button class="btn" onclick="toggleFullscreen()">全屏</button>
+                </div>
+                <div class="time-display" id="timeDisplay">00:00 / 00:00</div>
+            </div>
+            <div class="progress-bar" id="progressBar" onclick="seekTo(event)">
+                <div class="progress" id="progress"></div>
+            </div>
+        </div>
+
+        <button class="close-btn" id="closeBtn" onclick="window.close()">×</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.12/dist/hls.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dplayer@1.27.0/dist/DPlayer.min.js"></script>
+    <script>
+        class DPlayerVideoPlayer {
+            constructor() {
+                this.player = null;
+                this.currentMovie = null;
+                this.currentEpisode = null;
+                this.episodes = [];
+                this.isPlaying = false;
+                this.isMuted = false;
+                
+                this.initElements();
+                this.initEventListeners();
+                this.loadMovieData();
+            }
+
+            initElements() {
+                this.loadingEl = document.getElementById('loading');
+                this.errorEl = document.getElementById('error');
+                this.errorMessageEl = document.getElementById('errorMessage');
+                this.movieTitleEl = document.getElementById('movieTitle');
+                this.movieMetaEl = document.getElementById('movieMeta');
+                this.episodeInfoEl = document.getElementById('episodeInfo');
+                this.episodesEl = document.getElementById('episodes');
+                this.playBtn = document.getElementById('playBtn');
+                this.timeDisplay = document.getElementById('timeDisplay');
+                this.progressBar = document.getElementById('progressBar');
+                this.progress = document.getElementById('progress');
+            }
+
+            initEventListeners() {
+                // 键盘快捷键
+                document.addEventListener('keydown', (e) => this.handleKeydown(e));
+                
+                // 鼠标移动显示/隐藏控制栏
+                let hideControlsTimer;
+                document.addEventListener('mousemove', () => {
+                    const overlay = document.getElementById('controlsOverlay');
+                    overlay.style.opacity = '1';
+                    clearTimeout(hideControlsTimer);
+                    hideControlsTimer = setTimeout(() => {
+                        overlay.style.opacity = '0';
+                    }, 3000);
+                });
+            }
+
+            async loadMovieData() {
+                try {
+                    this.showLoading();
+                    
+                    // 从URL参数获取电影ID
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const movieId = urlParams.get('movieId') || '41372';
+                    
+                    console.log('🎬 开始加载电影数据, movieId:', movieId);
+                    
+                    // 获取电影详情 - 使用新的API接口
+                    const response = await fetch(`http://localhost:6066/v1/movies/${movieId}?include_episodes=true`);
+                    const data = await response.json();
+                    
+                    console.log('📡 API响应:', data);
+                    
+                    if (data.code === 0 && data.data) {
+                        this.currentMovie = data.data;
+                        
+                        // 适配新的数据结构：从play_list中提取剧集数据
+                        this.episodes = this.extractEpisodesFromPlayList(data.data.play_list);
+                        
+                        console.log('🎥 电影信息:', this.currentMovie);
+                        console.log('📺 剧集列表:', this.episodes);
+                        
+                        this.updateMovieInfo();
+                        this.updateEpisodeList();
+                        
+                        if (this.episodes.length > 0) {
+                            this.currentEpisode = this.episodes[0];
+                            console.log('🎯 当前剧集:', this.currentEpisode);
+                            console.log('🔗 播放地址:', this.currentEpisode.play_url);
+                            this.loadVideo(this.currentEpisode.play_url);
+                        } else {
+                            console.warn('⚠️ 没有找到剧集数据');
+                            this.showError('没有找到可播放的剧集');
+                        }
+                    } else {
+                        throw new Error('获取电影数据失败: ' + (data.message || '未知错误'));
+                    }
+                } catch (error) {
+                    console.error('❌ 加载电影数据失败:', error);
+                    this.showError('加载电影数据失败: ' + error.message);
+                }
+            }
+
+            // 从play_list中提取剧集数据
+            extractEpisodesFromPlayList(playList) {
+                if (!playList || !Array.isArray(playList) || playList.length === 0) {
+                    return [];
+                }
+
+                // 使用第一个播放源的剧集数据
+                const firstSource = playList[0];
+                if (!Array.isArray(firstSource)) {
+                    return [];
+                }
+
+                return firstSource.map((episode, index) => ({
+                    id: index + 1,
+                    movie_id: this.currentMovie?.id || 0,
+                    episode: episode.episode || `第${index + 1}集`,
+                    play_url: episode.link || '',
+                    player_type: 'm3u8',
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                }));
+            }
+
+            updateMovieInfo() {
+                if (this.currentMovie) {
+                    this.movieTitleEl.textContent = this.currentMovie.name || '未知电影';
+                    
+                    // 构建元信息
+                    const metaParts = [];
+                    if (this.currentMovie.descriptor?.year) {
+                        metaParts.push(this.currentMovie.descriptor.year);
+                    }
+                    if (this.currentMovie.descriptor?.area) {
+                        metaParts.push(this.currentMovie.descriptor.area);
+                    }
+                    if (this.currentMovie.descriptor?.class_tag) {
+                        metaParts.push(this.currentMovie.descriptor.class_tag);
+                    }
+                    
+                    this.movieMetaEl.textContent = metaParts.join(' • ') || '-';
+                }
+            }
+
+            updateEpisodeList() {
+                this.episodesEl.innerHTML = '';
+                this.episodes.forEach((episode, index) => {
+                    const episodeEl = document.createElement('div');
+                    episodeEl.className = 'episode-item';
+                    episodeEl.textContent = episode.episode;
+                    if (index === 0) {
+                        episodeEl.classList.add('active');
+                    }
+                    episodeEl.addEventListener('click', () => this.switchEpisode(episode, index));
+                    this.episodesEl.appendChild(episodeEl);
+                });
+            }
+
+            loadVideo(url) {
+                try {
+                    console.log('🎬 开始加载视频:', url);
+                    this.showLoading();
+                    
+                    // 销毁之前的播放器
+                    if (this.player) {
+                        console.log('🗑️ 销毁之前的播放器');
+                        this.player.destroy();
+                        this.player = null;
+                    }
+                    
+                    console.log('✅ 开始创建DPlayer播放器');
+                    
+                    // 创建DPlayer实例
+                    this.player = new DPlayer({
+                        container: document.getElementById('dplayer'),
+                        video: {
+                            name: this.currentMovie?.name || '视频',
+                            url: url,
+                            type: 'auto'
+                        },
+                        autoplay: false,
+                        theme: '#e50914',
+                        loop: false,
+                        screenshot: true,
+                        hotkey: true,
+                        preload: 'metadata',
+                        volume: 0.8,
+                        mutex: true
+                    });
+                    
+                    // 设置事件监听器
+                    this.setupPlayerEvents();
+                    
+                    console.log('✅ DPlayer播放器创建完成');
+                    this.hideLoading();
+                    
+                } catch (error) {
+                    console.error('❌ 创建播放器失败:', error);
+                    this.showError('播放器创建失败: ' + error.message);
+                }
+            }
+
+            setupPlayerEvents() {
+                if (!this.player) return;
+                
+                // 播放事件
+                this.player.on('play', () => {
+                    console.log('▶️ 开始播放');
+                    this.isPlaying = true;
+                    this.playBtn.textContent = '暂停';
+                });
+                
+                // 暂停事件
+                this.player.on('pause', () => {
+                    console.log('⏸️ 暂停播放');
+                    this.isPlaying = false;
+                    this.playBtn.textContent = '播放';
+                });
+                
+                // 错误事件
+                this.player.on('error', (e) => {
+                    console.error('❌ 播放器错误:', e);
+                    this.showError('播放器错误: ' + e.message);
+                });
+                
+                // 时间更新事件
+                this.player.on('timeupdate', () => {
+                    this.updateTimeDisplay();
+                });
+                
+                // 准备就绪事件
+                this.player.on('canplay', () => {
+                    console.log('✅ 播放器准备就绪');
+                    this.hideLoading();
+                });
+            }
+
+            updateTimeDisplay() {
+                if (!this.player) return;
+                
+                const current = this.player.video.currentTime;
+                const duration = this.player.video.duration;
+                
+                if (duration && !isNaN(duration)) {
+                    const currentTime = this.formatTime(current);
+                    const totalTime = this.formatTime(duration);
+                    this.timeDisplay.textContent = `${currentTime} / ${totalTime}`;
+                    
+                    // 更新进度条
+                    const progress = (current / duration) * 100;
+                    this.progress.style.width = `${progress}%`;
+                }
+            }
+
+            formatTime(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+
+            switchEpisode(episode, index) {
+                this.currentEpisode = episode;
+                this.episodeInfoEl.textContent = episode.episode;
+                
+                // 更新剧集列表选中状态
+                document.querySelectorAll('.episode-item').forEach((el, i) => {
+                    el.classList.toggle('active', i === index);
+                });
+                
+                this.loadVideo(episode.play_url);
+            }
+
+            handleKeydown(e) {
+                if (!this.player) return;
+                
+                switch(e.code) {
+                    case 'Space':
+                        e.preventDefault();
+                        this.togglePlay();
+                        break;
+                    case 'Escape':
+                        if (document.fullscreenElement) {
+                            document.exitFullscreen();
+                        }
+                        break;
+                    case 'KeyF':
+                        e.preventDefault();
+                        this.toggleFullscreen();
+                        break;
+                    case 'KeyM':
+                        e.preventDefault();
+                        this.toggleMute();
+                        break;
+                }
+            }
+
+            showLoading() {
+                this.loadingEl.style.display = 'block';
+                this.errorEl.style.display = 'none';
+            }
+
+            hideLoading() {
+                this.loadingEl.style.display = 'none';
+            }
+
+            showError(message) {
+                this.loadingEl.style.display = 'none';
+                this.errorEl.style.display = 'block';
+                this.errorMessageEl.textContent = message;
+            }
+        }
+
+        // 全局控制函数
+        function togglePlay() {
+            if (window.player && window.player.player) {
+                if (window.player.isPlaying) {
+                    window.player.player.pause();
+                } else {
+                    window.player.player.play();
+                }
+            }
+        }
+
+        function toggleMute() {
+            if (window.player && window.player.player) {
+                if (window.player.isMuted) {
+                    window.player.player.volume(0.8);
+                    window.player.isMuted = false;
+                } else {
+                    window.player.player.volume(0);
+                    window.player.isMuted = true;
+                }
+            }
+        }
+
+        function toggleFullscreen() {
+            if (window.player && window.player.player) {
+                window.player.player.fullScreen.toggle();
+            }
+        }
+
+        function seekTo(event) {
+            if (window.player && window.player.player) {
+                const progressBar = event.currentTarget;
+                const rect = progressBar.getBoundingClientRect();
+                const clickX = event.clientX - rect.left;
+                const percentage = clickX / rect.width;
+                const duration = window.player.player.video.duration;
+                const newTime = percentage * duration;
+                window.player.player.seek(newTime);
+            }
+        }
+
+        // 初始化播放器
+        document.addEventListener('DOMContentLoaded', () => {
+            window.player = new DPlayerVideoPlayer();
+        });
+    </script>
+</body>
+</html>

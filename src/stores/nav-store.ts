@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
-import { samplePlugins } from '../plugins/sample-plugins-simple'
+import { pluginManager } from '../lib/plugin-manager-simple'
 
 // 导航项类型定义
 export interface NavItem {
@@ -10,6 +10,8 @@ export interface NavItem {
   icon: any
   isActive: boolean
   url?: string
+  component?: any
+  routes?: any[]
 }
 
 // 导航状态类型
@@ -22,14 +24,15 @@ interface NavState {
   setActiveItemByTitle: (title: string) => void
   setActiveItemById: (id: string) => void
   updateNavMain: (plugins: any[]) => void
+  initializeNavFromPlugins: () => void
 }
 
 export const useNavStore = create<NavState>()(
   devtools(
     (set) => ({
-      // 初始导航数据 - 使用插件数据
-      navMain: samplePlugins
-        .filter(plugin => plugin.config?.showInNav !== false)
+      // 初始导航数据 - 使用插件管理器获取所有插件
+      navMain: pluginManager.getPlugins()
+        .filter(plugin => plugin.config?.showInNav !== false && plugin.config?.enabled)
         .sort((a, b) => (a.config?.position || 0) - (b.config?.position || 0))
         .map((plugin, index) => ({
           id: plugin.id,
@@ -37,7 +40,9 @@ export const useNavStore = create<NavState>()(
           description: plugin.description,
           icon: plugin.icon,
           isActive: index === 0, // 第一个插件默认激活
-          url: "#"
+          url: "#",
+          component: plugin.component,
+          routes: plugin.routes
         })),
       activeItem: null,
 
@@ -96,7 +101,24 @@ export const useNavStore = create<NavState>()(
               routes: plugin.routes, // 添加路由信息
               config: plugin.config
             }))
-        }), false, 'updateNavMain')
+        }), false, 'updateNavMain'),
+      
+      initializeNavFromPlugins: () => 
+        set(() => ({
+          navMain: pluginManager.getPlugins()
+            .filter(plugin => plugin.config?.showInNav !== false && plugin.config?.enabled)
+            .sort((a, b) => (a.config?.position || 0) - (b.config?.position || 0))
+            .map((plugin, index) => ({
+              id: plugin.id,
+              title: plugin.name,
+              description: plugin.description,
+              icon: plugin.icon,
+              isActive: index === 0, // 第一个插件默认激活
+              url: "#",
+              component: plugin.component,
+              routes: plugin.routes
+            }))
+        }), false, 'initializeNavFromPlugins')
     }),
     {
       name: 'nav-store', // 用于 Redux DevTools

@@ -8,7 +8,6 @@ import { pluginManager } from '@/lib/plugin-manager'
 
 // 导入所有插件
 import { pluginConfig as templatePluginConfig } from '../templates/plugin-template/config/plugin.config'
-import { weatherConfig } from '../weather-plugin/config/weather.config'
 
 /**
  * 插件注册表
@@ -27,9 +26,6 @@ export class PluginRegistry {
   private initializeDefaultPlugins() {
     // 注册模板插件（仅用于开发）
     this.registerPlugin(templatePluginConfig)
-    
-    // 注册天气插件
-    this.registerPlugin(weatherConfig)
   }
 
   /**
@@ -54,8 +50,6 @@ export class PluginRegistry {
       return
     }
 
-    const plugin = this.plugins.get(pluginId)!
-    
     // 如果插件已安装，先卸载
     if (this.installedPlugins.has(pluginId)) {
       this.uninstallPlugin(pluginId)

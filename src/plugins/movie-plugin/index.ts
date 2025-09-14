@@ -1,6 +1,7 @@
 import { Plugin } from '../../types/plugin'
 import { MovieIcon } from './assets/movie-icon'
-import { MovieComponent } from './components/MovieComponent'
+import { MovieSearchInterface } from './components/MovieSearchInterface'
+import { TestComponent } from './components/TestComponent'
 
 export const moviePlugin: Plugin = {
   id: 'movie-data',
@@ -10,6 +11,7 @@ export const moviePlugin: Plugin = {
   author: 'BlueMD Team',
   icon: MovieIcon,
   category: '数据管理',
+  component: MovieSearchInterface,
   config: {
     position: 2,
     showInNav: true,
