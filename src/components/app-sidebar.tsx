@@ -10,7 +10,9 @@ import {
 } from "@/components/ui/multi-sidebar"
 import { useNavMain, useNavStore } from "@/stores/nav-store"
 import { PluginManagerModal } from "./plugin-manager-modal"
+import { PluginManagerSidebar } from "./plugin-manager-sidebar"
 import { MovieSearchSidebar } from "@/plugins/movie-plugin/components/MovieSearchSidebar"
+import { RSSSidebar } from "@/plugins/rss-plugin/components/RSSSidebar"
 
 // This is sample data
 const data = {
@@ -27,110 +29,41 @@ const data = {
             date: "09:34 AM",
             teaser:
                 "Hi team, just a reminder about our meeting tomorrow at 10 AM.\nPlease come prepared with your project updates.",
-        },
-        {
-            name: "Alice Smith",
-            email: "alicesmith@example.com",
-            subject: "Re: Project Update",
-            date: "Yesterday",
-            teaser:
-                "Thanks for the update. The progress looks great so far.\nLet's schedule a call to discuss the next steps.",
-        },
-        {
-            name: "Bob Johnson",
-            email: "bobjohnson@example.com",
-            subject: "Weekend Plans",
-            date: "2 days ago",
-            teaser:
-                "Hey everyone! I'm thinking of organizing a team outing this weekend.\nWould you be interested in a hiking trip or a beach day?",
-        },
-        {
-            name: "Emily Davis",
-            email: "emilydavis@example.com",
-            subject: "Re: Question about Budget",
-            date: "2 days ago",
-            teaser:
-                "I've reviewed the budget numbers you sent over.\nCan we set up a quick call to discuss some potential adjustments?",
-        },
-        {
-            name: "Michael Wilson",
-            email: "michaelwilson@example.com",
-            subject: "Important Announcement",
-            date: "1 week ago",
-            teaser:
-                "Please join us for an all-hands meeting this Friday at 3 PM.\nWe have some exciting news to share about the company's future.",
-        },
-        {
-            name: "Sarah Brown",
-            email: "sarahbrown@example.com",
-            subject: "Re: Feedback on Proposal",
-            date: "1 week ago",
-            teaser:
-                "Thank you for sending over the proposal. I've reviewed it and have some thoughts.\nCould we schedule a meeting to discuss my feedback in detail?",
-        },
-        {
-            name: "David Lee",
-            email: "davidlee@example.com",
-            subject: "New Project Idea",
-            date: "1 week ago",
-            teaser:
-                "I've been brainstorming and came up with an interesting project concept.\nDo you have time this week to discuss its potential impact and feasibility?",
-        },
-        {
-            name: "Olivia Wilson",
-            email: "oliviawilson@example.com",
-            subject: "Vacation Plans",
-            date: "1 week ago",
-            teaser:
-                "Just a heads up that I'll be taking a two-week vacation next month.\nI'll make sure all my projects are up to date before I leave.",
-        },
-        {
-            name: "James Martin",
-            email: "jamesmartin@example.com",
-            subject: "Re: Conference Registration",
-            date: "1 week ago",
-            teaser:
-                "I've completed the registration for the upcoming tech conference.\nLet me know if you need any additional information from my end.",
-        },
-        {
-            name: "Sophia White",
-            email: "sophiawhite@example.com",
-            subject: "Team Dinner",
-            date: "1 week ago",
-            teaser:
-                "To celebrate our recent project success, I'd like to organize a team dinner.\nAre you available next Friday evening? Please let me know your preferences.",
-        },
+        }
+        
     ],
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof MultiSidebar>) {
+export function AppSidebar({ onSelectedPluginChange, ...props }: React.ComponentProps<typeof MultiSidebar> & { onSelectedPluginChange?: (plugin: any) => void }) {
     const navMain = useNavMain()
     const { setActiveItem } = useNavStore()
     const [activePlugin, setActivePlugin] = React.useState<any>(null)
     const [isSettingsModalOpen, setIsSettingsModalOpen] = React.useState(false)
+    const [selectedPlugin, setSelectedPlugin] = React.useState<any>(null)
     const { toggleSidebar } = useLeftSidebar()
 
     // 处理插件点击
     const handlePluginClick = (item: any) => {
         if (activePlugin?.id === item.id) {
             // 如果点击的是当前激活的插件，关闭插件内容并切换侧边栏
-            
-            //toggleSidebar() // 切换显示/隐藏
-            //setActivePlugin(null)
             setActiveItem(null)
-           /// if (useLeftSidebar().expanded) {
-                toggleSidebar() // 切换显示/隐藏
-           // } 
-            //toggleSidebar() // 切换显示/隐藏
+            setActivePlugin(null)
+            setSelectedPlugin(null)
+            onSelectedPluginChange?.(null)
+            toggleSidebar() // 切换显示/隐藏
         } else {
-            // if (!useLeftSidebar().expanded) {
-            //     toggleSidebar() // 切换显示/隐藏
-            // }
-
             // 如果点击的是其他插件，激活该插件
             setActivePlugin(item)
             setActiveItem(item)
+            setSelectedPlugin(null)
+            onSelectedPluginChange?.(null)
         }
+    }
+
+    // 处理插件管理中的插件选择
+    const handlePluginManagerPluginSelect = (plugin: any) => {
+        setSelectedPlugin(plugin)
+        onSelectedPluginChange?.(plugin)
     }
 
     return (
@@ -176,14 +109,22 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof MultiSideba
                     </div>
                     <div className="flex flex-col gap-2 p-2">
                         <NavUser user={data.user} />
-                        {/* 设置按钮 */}
+                        {/* 插件管理按钮 */}
                         <button
-                            onClick={() => setIsSettingsModalOpen(true)}
-                            className="flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-hidden transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 px-2.5 md:px-2"
-                            title="插件设置"
+                            onClick={() => {
+                                const pluginManagerItem = {
+                                    id: 'plugin-manager',
+                                    title: '插件管理',
+                                    description: '管理已安装的插件',
+                                    icon: Settings
+                                };
+                                handlePluginClick(pluginManagerItem);
+                            }}
+                            className={`flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-hidden transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 px-2.5 md:px-2 ${activePlugin?.id === 'plugin-manager' ? 'bg-sidebar-accent font-medium text-sidebar-accent-foreground' : ''}`}
+                            title="插件管理"
                         >
                             <Settings className="size-4 shrink-0" />
-                            <span className="truncate">插件设置</span>
+                            <span className="truncate">插件管理</span>
                         </button>
                     </div>
                 </div>
@@ -210,9 +151,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof MultiSideba
                                         </div>
                                     </div>
                                     <button
-                                        onClick={() => {
-                                            setActivePlugin(null)
-                                        }}
+                                        onClick={() => setActivePlugin(null)}
                                         className="w-6 h-6 flex items-center justify-center rounded hover:bg-accent hover:text-accent-foreground"
                                         title="关闭插件"
                                     >
@@ -231,6 +170,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof MultiSideba
                                             {activePlugin.id === 'movie-data' ? (
                                                 // 电影插件显示搜索条件
                                                 <MovieSearchSidebar />
+                                            ) : activePlugin.id === 'rss-reader' ? (
+                                                // RSS插件显示RSS源管理
+                                                <RSSSidebar />
+                                            ) : activePlugin.id === 'plugin-manager' ? (
+                                                // 插件管理界面 - 像电影插件一样显示
+                                                <PluginManagerSidebar
+                                                    selectedPlugin={selectedPlugin}
+                                                    onPluginSelect={handlePluginManagerPluginSelect}
+                                                />
                                             ) : activePlugin.component ? (
                                                 // 渲染插件的component属性
                                                 React.createElement(activePlugin.component)
@@ -290,6 +238,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof MultiSideba
                 open={isSettingsModalOpen}
                 onOpenChange={setIsSettingsModalOpen}
             />
+            
         </MultiSidebar>
     )
 }

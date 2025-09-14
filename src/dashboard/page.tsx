@@ -1,6 +1,7 @@
+import React from 'react'
 import { AppSidebar } from "@/components/app-sidebar"
 import { MovieSearchResults } from "@/plugins/movie-plugin/components/MovieSearchResults"
-import { MovieSearchSidebar } from "@/plugins/movie-plugin/components/MovieSearchSidebar"
+import { PluginDetailContent } from "@/components/plugin-detail-content"
 import { useNavStore } from "@/stores/nav-store"
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
@@ -28,7 +29,7 @@ const queryClient = new QueryClient({
   },
 });
 
-function ContentArea() {
+function ContentArea({ selectedPlugin }: { selectedPlugin?: any }) {
   const { activeItem } = useNavStore();
 
   const handleMovieClick = (movie: any) => {
@@ -57,6 +58,14 @@ function ContentArea() {
     );
   }
 
+  // 如果激活的是插件管理，显示插件详情
+  if (activeItem?.id === 'plugin-manager') {
+    return (
+      <div className="flex-1 overflow-y-auto">
+        <PluginDetailContent plugin={selectedPlugin} />
+      </div>
+    );
+  }
 
   // 默认内容
   return (
@@ -67,13 +76,15 @@ function ContentArea() {
 }
 
 export default function Dashboard() {
+  const [selectedPlugin, setSelectedPlugin] = React.useState<any>(null);
+
   return (
     <MultiSidebarProvider style={
       {
         "--sidebar-width": "350px",
       } as React.CSSProperties
     }>
-      <AppSidebar />
+      <AppSidebar onSelectedPluginChange={setSelectedPlugin} />
       <MultiSidebarInset>
         <header className="bg-background sticky top-0 flex h-14 shrink-0 items-center gap-2">
           <div className="flex flex-1 items-center gap-2 px-3">
@@ -96,7 +107,7 @@ export default function Dashboard() {
             <MultiSidebarTrigger side="right" />
           </div>
         </header>
-        <ContentArea />
+        <ContentArea selectedPlugin={selectedPlugin} />
       </MultiSidebarInset>
       <SidebarRight />
     </MultiSidebarProvider>
