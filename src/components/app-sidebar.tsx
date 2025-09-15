@@ -170,15 +170,15 @@ export function AppSidebar({ onSelectedPluginChange, ...props }: React.Component
                                             {activePlugin.id === 'movie-data' ? (
                                                 // 电影插件显示搜索条件
                                                 <MovieSearchSidebar />
-                                            ) : activePlugin.id === 'rss-reader' ? (
-                                                // RSS插件显示RSS源管理
-                                                <RSSSidebar />
                                             ) : activePlugin.id === 'plugin-manager' ? (
                                                 // 插件管理界面 - 像电影插件一样显示
                                                 <PluginManagerSidebar
                                                     selectedPlugin={selectedPlugin}
                                                     onPluginSelect={handlePluginManagerPluginSelect}
                                                 />
+                                            ) : activePlugin.id === 'rss-reader' ? (
+                                                // RSS 源在第二侧边栏只显示“源列表”（纯列表模式）
+                                                <RSSSidebar mode="list-only" />
                                             ) : activePlugin.component ? (
                                                 // 渲染插件的component属性
                                                 React.createElement(activePlugin.component)

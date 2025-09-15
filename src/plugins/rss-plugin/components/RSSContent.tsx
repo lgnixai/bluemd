@@ -24,7 +24,10 @@ export const RSSContent: React.FC = () => {
       const response = await fetch(`http://localhost:6066/v1/rss/feeds/${feedId}/items`);
       if (response.ok) {
         const data = await response.json();
-        setItems(data.data?.items || []);
+        // 服务端当前返回的是直接数组 data: [] 或 data 即为数组，做兼容
+        const payload = data?.data;
+        const list = Array.isArray(payload) ? payload : (payload?.items || []);
+        setItems(list);
       } else {
         setError('获取RSS文章失败');
       }
@@ -116,10 +119,10 @@ export const RSSContent: React.FC = () => {
   }
 
   return (
-    <div className="h-full flex flex-col">
-      {/* 上部分：文章列表 */}
-      <div className="flex-1 overflow-hidden">
-        <Card className="h-full flex flex-col">
+    <div className="h-full flex">
+      {/* 左侧：文章列表 */}
+      <div className="w-[40%] min-w-[380px] border-r overflow-hidden">
+        <Card className="h-full flex flex-col rounded-none border-0">
           <CardHeader className="flex-shrink-0">
             <div className="flex items-center justify-between">
               <div>
@@ -211,10 +214,10 @@ export const RSSContent: React.FC = () => {
         </Card>
       </div>
 
-      {/* 下部分：文章详情 */}
+      {/* 右侧：文章详情 */}
       {selectedItem && (
-        <div className="mt-4 flex-shrink-0">
-          <Card>
+        <div className="flex-1 min-w-0">
+          <Card className="h-full rounded-none border-0">
             <CardHeader>
               <CardTitle className="text-lg">文章详情</CardTitle>
             </CardHeader>
