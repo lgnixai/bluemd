@@ -2,6 +2,7 @@ import React from 'react'
 import { AppSidebar } from "@/components/app-sidebar"
 import { MovieSearchResults } from "@/plugins/movie-plugin/components/MovieSearchResults"
 import { PluginDetailContent } from "@/components/plugin-detail-content"
+import { RSSComponent } from "@/plugins/rss-plugin/components/RSSComponent"
 import { useNavStore } from "@/stores/nav-store"
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
@@ -56,6 +57,15 @@ function ContentArea({ selectedPlugin }: { selectedPlugin?: any }) {
         </div>
       </QueryClientProvider>
     );
+  }
+
+  // 如果激活的是RSS阅读器，在内容区显示文章列表+详情
+  if (activeItem?.id === 'rss-reader') {
+    return (
+      <div className="flex-1 overflow-y-auto">
+        <RSSComponent />
+      </div>
+    )
   }
 
   // 如果激活的是插件管理，显示插件详情
